@@ -7,12 +7,14 @@ from app.api.router import api_router
 from app.config import get_settings
 from app.seeds.seed_admin import init_db
 from app.seeds.migrate_to_orgs import migrate_schema
+from app.seeds.seed_demo import seed_demo
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
     migrate_schema()
+    seed_demo()
     yield
 
 

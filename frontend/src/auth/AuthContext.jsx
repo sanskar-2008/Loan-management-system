@@ -37,6 +37,12 @@ export function AuthProvider({ children }) {
         setToken(data.access_token)
         return data
       },
+      async loginDemo() {
+        const { data } = await api.post('/auth/demo')
+        sessionStorage.setItem('lms_token', data.access_token)
+        setToken(data.access_token)
+        return data
+      },
       logout() {
         sessionStorage.removeItem('lms_token')
         setToken(null)

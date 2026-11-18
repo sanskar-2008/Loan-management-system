@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom'
 import api from '../api/client'
 import { PageHeader } from '../components/ui'
 import { errorMessage } from '../utils/format'
+import { useAuth } from '../auth/AuthContext'
 
 export default function SettingsPage() {
+  const { admin } = useAuth()
   const [form, setForm] = useState(null)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
@@ -54,7 +56,7 @@ export default function SettingsPage() {
       <PageHeader
         title="Settings"
         subtitle="Company profile and loan defaults"
-        actions={<Link className="btn btn-secondary" to="/change-password">Change password</Link>}
+        actions={!admin?.is_demo ? <Link className="btn btn-secondary" to="/change-password">Change password</Link> : null}
       />
       {error ? <div className="error-banner">{error}</div> : null}
       {message ? <div className="success-banner">{message}</div> : null}
@@ -69,7 +71,7 @@ export default function SettingsPage() {
         </div>
         <div className="field"><label className="label">Address</label><textarea className="textarea" value={form.company_address || ''} onChange={(e) => set('company_address', e.target.value)} /></div>
         <div className="form-actions">
-          <button className="btn" disabled={loading}>{loading ? 'Saving…' : 'Save settings'}</button>
+          {!admin?.is_demo ? <button className="btn" disabled={loading}>{loading ? 'Saving…' : 'Save settings'}</button> : <p className="muted">Demo settings are read-only.</p>}
         </div>
       </form>
     </div>

@@ -4,8 +4,10 @@ import api from '../../api/client'
 import { DataTable, FilterBar, Pagination } from '../../components/tables/DataTable'
 import { EmptyState, PageHeader } from '../../components/ui'
 import { errorMessage, formatDate, formatMoney } from '../../utils/format'
+import { useAuth } from '../../auth/AuthContext'
 
 export default function PaymentList() {
+  const { admin } = useAuth()
   const navigate = useNavigate()
   const [page, setPage] = useState(1)
   const [mode, setMode] = useState('')
@@ -24,7 +26,7 @@ export default function PaymentList() {
       <PageHeader
         title="Repayments"
         subtitle="Payments you made toward loans"
-        actions={<Link className="btn" to="/payments/new">Record repayment</Link>}
+        actions={!admin?.is_demo ? <Link className="btn" to="/payments/new">Record repayment</Link> : null}
       />
       {error ? <div className="error-banner">{error}</div> : null}
       <FilterBar>
@@ -41,7 +43,7 @@ export default function PaymentList() {
         <EmptyState
           title="No repayments"
           description="Record a repayment against an active loan."
-          action={<Link className="btn" to="/payments/new">Record repayment</Link>}
+          action={!admin?.is_demo ? <Link className="btn" to="/payments/new">Record repayment</Link> : null}
         />
       ) : (
         <>

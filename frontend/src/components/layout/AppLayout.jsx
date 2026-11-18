@@ -2,6 +2,7 @@ import { Link, Outlet, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import Sidebar from './Sidebar'
 import api from '../../api/client'
+import { useAuth } from '../../auth/AuthContext'
 
 const TITLES = {
   '/dashboard': 'Dashboard',
@@ -17,6 +18,8 @@ export default function AppLayout() {
   const location = useLocation()
   const [open, setOpen] = useState(false)
   const [overdueCount, setOverdueCount] = useState(0)
+  const { admin } = useAuth()
+  const isDemo = admin?.is_demo
 
   useEffect(() => {
     setOpen(false)
@@ -45,12 +48,10 @@ export default function AppLayout() {
             <div className="topbar-title">{title}</div>
           </div>
           <div className="topbar-actions">
-            <Link className="btn btn-secondary" to="/loans/new">
-              New loan
-            </Link>
-            <Link className="btn" to="/payments/new">
-              Record payment
-            </Link>
+            {!isDemo ? <>
+              <Link className="btn btn-secondary" to="/loans/new">New loan</Link>
+              <Link className="btn" to="/payments/new">Record payment</Link>
+            </> : <span className="demo-mode-badge">Demo · Read only</span>}
           </div>
         </header>
         <main className="content">

@@ -4,8 +4,10 @@ import api from '../../api/client'
 import { DataTable } from '../../components/tables/DataTable'
 import { Badge, PageHeader, Spinner } from '../../components/ui'
 import { errorMessage, formatDate, formatMoney } from '../../utils/format'
+import { useAuth } from '../../auth/AuthContext'
 
 export default function LoanDetail() {
+  const { admin } = useAuth()
   const { id } = useParams()
   const [loan, setLoan] = useState(null)
   const [emis, setEmis] = useState([])
@@ -48,13 +50,13 @@ export default function LoanDetail() {
         subtitle={`${loan.organization_name || 'Organization'} · ${loan.loan_type} interest`}
         actions={
           <>
-            {loan.status === 'active' || loan.status === 'defaulted' ? (
+            {!admin?.is_demo && (loan.status === 'active' || loan.status === 'defaulted') ? (
               <Link className="btn" to={`/payments/new?loan_id=${loan.id}`}>Record repayment</Link>
             ) : null}
             {loan.status === 'active' ? (
               <>
-                <button className="btn btn-secondary" onClick={() => setStatus('defaulted')}>Mark Defaulted</button>
-                <button className="btn btn-danger" onClick={() => setStatus('cancelled')}>Cancel</button>
+                {!admin?.is_demo ? <button className="btn btn-secondary" onClick={() => setStatus('defaulted')}>Mark Defaulted</button> : null}
+                {!admin?.is_demo ? <button className="btn btn-danger" onClick={() => setStatus('cancelled')}>Cancel</button> : null}
               </>
             ) : null}
           </>

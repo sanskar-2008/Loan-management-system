@@ -11,6 +11,7 @@ const MAIN = [
 
 export default function Sidebar({ open, overdueCount = 0, onNavigate }) {
   const { admin, logout } = useAuth()
+  const isDemo = admin?.is_demo
   const navigate = useNavigate()
 
   function go(path) {
@@ -60,13 +61,13 @@ export default function Sidebar({ open, overdueCount = 0, onNavigate }) {
       </nav>
 
       <div className="sidebar-footer">
-        <NavLink
+        {!isDemo ? <NavLink
           to="/settings"
           onClick={() => onNavigate?.()}
           className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
         >
           Settings
-        </NavLink>
+        </NavLink> : null}
         <div className="nav-link" style={{ cursor: 'default' }}>
           {admin?.full_name || admin?.username || 'Admin'}
         </div>

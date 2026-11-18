@@ -4,8 +4,10 @@ import api from '../../api/client'
 import { DataTable, FilterBar, Pagination } from '../../components/tables/DataTable'
 import { Badge, EmptyState, PageHeader } from '../../components/ui'
 import { errorMessage, formatMoney } from '../../utils/format'
+import { useAuth } from '../../auth/AuthContext'
 
 export default function OrganizationList() {
+  const { admin } = useAuth()
   const navigate = useNavigate()
   const [filters, setFilters] = useState({ q: '', status: '' })
   const [page, setPage] = useState(1)
@@ -31,7 +33,7 @@ export default function OrganizationList() {
       <PageHeader
         title="Organizations"
         subtitle="Lenders you borrowed from"
-        actions={<Link className="btn" to="/organizations/new">Add organization</Link>}
+        actions={!admin?.is_demo ? <Link className="btn" to="/organizations/new">Add organization</Link> : null}
       />
       {error ? <div className="error-banner">{error}</div> : null}
       <FilterBar>
@@ -61,7 +63,7 @@ export default function OrganizationList() {
         <EmptyState
           title="No organizations"
           description="Add a bank or lender, then record loans taken from them."
-          action={<Link className="btn" to="/organizations/new">Add organization</Link>}
+          action={!admin?.is_demo ? <Link className="btn" to="/organizations/new">Add organization</Link> : null}
         />
       ) : (
         <>

@@ -5,7 +5,7 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session, joinedload
 
 from app.database import get_db
-from app.deps import get_current_admin
+from app.deps import get_current_admin, require_admin_write
 from app.models.admin import Admin
 from app.models.loan import Loan
 from app.models.organization import Organization
@@ -102,7 +102,7 @@ def preview_loan(body: LoanPreviewRequest, admin: Admin = Depends(get_current_ad
 def create_loan(
     body: LoanCreate,
     db: Session = Depends(get_db),
-    admin: Admin = Depends(get_current_admin),
+    admin: Admin = Depends(require_admin_write),
 ):
     loan = loan_service.create_loan(
         db,
@@ -141,7 +141,7 @@ def update_notes(
     loan_id: str,
     body: LoanNotesUpdate,
     db: Session = Depends(get_db),
-    admin: Admin = Depends(get_current_admin),
+    admin: Admin = Depends(require_admin_write),
 ):
     loan = db.get(Loan, loan_id)
     if not loan:
@@ -159,7 +159,7 @@ def update_status(
     loan_id: str,
     body: LoanStatusUpdate,
     db: Session = Depends(get_db),
-    admin: Admin = Depends(get_current_admin),
+    admin: Admin = Depends(require_admin_write),
 ):
     loan = loan_service.update_loan_status(db, loan_id, body.status, admin.id)
     loan = db.scalar(

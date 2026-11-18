@@ -19,18 +19,20 @@ def next_organization_code(db: Session) -> str:
     max_n = 0
     for code in codes:
         try:
-            if code.startswith("ORG-"):
+            if db.info.get("demo_mode") and code.startswith("DEMO-ORG-"):
+                max_n = max(max_n, int(code.rsplit("-", 1)[1]))
+            elif code.startswith("ORG-"):
                 max_n = max(max_n, int(code.split("-", 1)[1]))
         except (ValueError, IndexError):
             continue
-    return f"ORG-{max_n + 1:04d}"
+    return f"DEMO-ORG-{max_n + 1:04d}" if db.info.get("demo_mode") else f"ORG-{max_n + 1:04d}"
 
 
 def next_loan_number(db: Session) -> str:
     from app.models.loan import Loan
 
     today = date.today().strftime("%Y%m%d")
-    prefix = f"LN-{today}-"
+    prefix = f"{'DEMO-' if db.info.get('demo_mode') else ''}LN-{today}-"
     count = db.scalar(
         select(func.count()).select_from(Loan).where(Loan.loan_number.like(f"{prefix}%"))
     ) or 0
@@ -41,7 +43,7 @@ def next_payment_number(db: Session) -> str:
     from app.models.payment import Payment
 
     today = date.today().strftime("%Y%m%d")
-    prefix = f"PAY-{today}-"
+    prefix = f"{'DEMO-' if db.info.get('demo_mode') else ''}PAY-{today}-"
     count = db.scalar(
         select(func.count()).select_from(Payment).where(Payment.payment_number.like(f"{prefix}%"))
     ) or 0

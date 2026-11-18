@@ -24,7 +24,7 @@ function EyeIcon({ open }) {
 }
 
 export default function Login() {
-  const { login, token } = useAuth()
+  const { login, loginDemo, token } = useAuth()
   const navigate = useNavigate()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -40,6 +40,19 @@ export default function Login() {
     setLoading(true)
     try {
       await login(username.trim(), password)
+      navigate('/dashboard')
+    } catch (err) {
+      setError(errorMessage(err))
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function onDemo() {
+    setError('')
+    setLoading(true)
+    try {
+      await loginDemo()
       navigate('/dashboard')
     } catch (err) {
       setError(errorMessage(err))
@@ -118,6 +131,13 @@ export default function Login() {
           <button className="btn auth-submit" type="submit" disabled={loading || !username || !password}>
             {loading ? 'Signing in…' : 'Sign in'}
           </button>
+
+          <div className="auth-divider"><span>or explore</span></div>
+          <button className="btn btn-secondary auth-demo" type="button" onClick={onDemo} disabled={loading}>
+            {loading ? 'Preparing demo…' : 'Try Demo Account'}
+            <span aria-hidden="true">→</span>
+          </button>
+          <p className="auth-demo-note">Explore sample loans and reports in read-only mode.</p>
 
           <p className="auth-back">
             <Link to="/">← Back to home</Link>

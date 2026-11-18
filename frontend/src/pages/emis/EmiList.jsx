@@ -4,8 +4,10 @@ import api from '../../api/client'
 import { DataTable, FilterBar, Pagination } from '../../components/tables/DataTable'
 import { Badge, PageHeader } from '../../components/ui'
 import { errorMessage, formatDate, formatMoney } from '../../utils/format'
+import { useAuth } from '../../auth/AuthContext'
 
 export default function EmiList() {
+  const { admin } = useAuth()
   const navigate = useNavigate()
   const [status, setStatus] = useState('')
   const [page, setPage] = useState(1)
@@ -38,7 +40,7 @@ export default function EmiList() {
       <PageHeader
         title="EMI Schedule"
         subtitle="Global installment explorer"
-        actions={<button className="btn btn-secondary" onClick={refreshOverdue}>Refresh overdue</button>}
+        actions={!admin?.is_demo ? <button className="btn btn-secondary" onClick={refreshOverdue}>Refresh overdue</button> : null}
       />
       {error ? <div className="error-banner">{error}</div> : null}
       {message ? <div className="success-banner">{message}</div> : null}

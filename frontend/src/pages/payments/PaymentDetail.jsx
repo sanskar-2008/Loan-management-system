@@ -4,8 +4,10 @@ import api from '../../api/client'
 import { DataTable } from '../../components/tables/DataTable'
 import { PageHeader, Spinner } from '../../components/ui'
 import { errorMessage, formatDate, formatMoney } from '../../utils/format'
+import { useAuth } from '../../auth/AuthContext'
 
 export default function PaymentDetail() {
+  const { admin } = useAuth()
   const { id } = useParams()
   const [payment, setPayment] = useState(null)
   const [allocations, setAllocations] = useState([])
@@ -67,7 +69,7 @@ export default function PaymentDetail() {
         ]}
         rows={allocations}
       />
-      {!payment.is_voided ? (
+      {!payment.is_voided && !admin?.is_demo ? (
         <div className="card card-pad" style={{ marginTop: 16, maxWidth: 560 }}>
           <h3 style={{ marginTop: 0 }}>Void payment</h3>
           <p className="muted">Creates a compensating reverse and recalculates EMI/loan balances.</p>

@@ -4,8 +4,10 @@ import api from '../../api/client'
 import { DataTable, FilterBar, Pagination } from '../../components/tables/DataTable'
 import { Badge, EmptyState, PageHeader } from '../../components/ui'
 import { errorMessage, formatDate, formatMoney } from '../../utils/format'
+import { useAuth } from '../../auth/AuthContext'
 
 export default function LoanList() {
+  const { admin } = useAuth()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const [filters, setFilters] = useState({
@@ -42,7 +44,7 @@ export default function LoanList() {
       <PageHeader
         title="Loans"
         subtitle="Loans you took from organizations"
-        actions={<Link className="btn" to="/loans/new">New Loan</Link>}
+        actions={!admin?.is_demo ? <Link className="btn" to="/loans/new">New Loan</Link> : null}
       />
       {error ? <div className="error-banner">{error}</div> : null}
       <FilterBar>
@@ -66,7 +68,7 @@ export default function LoanList() {
         </select>
       </FilterBar>
       {!data.items.length ? (
-        <EmptyState title="No loans" description="Record a loan you took from an organization." action={<Link className="btn" to="/loans/new">Create loan</Link>} />
+        <EmptyState title="No loans" description="Record a loan you took from an organization." action={!admin?.is_demo ? <Link className="btn" to="/loans/new">Create loan</Link> : null} />
       ) : (
         <>
           <DataTable

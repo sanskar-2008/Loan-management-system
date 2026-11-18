@@ -5,7 +5,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session, joinedload
 
 from app.database import get_db
-from app.deps import get_current_admin
+from app.deps import get_current_admin, require_admin_write
 from app.models.admin import Admin
 from app.models.emi import EmiSchedule
 from app.models.loan import Loan
@@ -81,6 +81,6 @@ def get_emi(
 
 
 @router.post("/refresh-overdue")
-def refresh_overdue(db: Session = Depends(get_db), admin: Admin = Depends(get_current_admin)):
+def refresh_overdue(db: Session = Depends(get_db), admin: Admin = Depends(require_admin_write)):
     updated = loan_service.refresh_overdue_emis(db)
     return {"updated": updated}

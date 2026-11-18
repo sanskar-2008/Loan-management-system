@@ -4,8 +4,10 @@ import api from '../../api/client'
 import { DataTable } from '../../components/tables/DataTable'
 import { Badge, PageHeader, Spinner } from '../../components/ui'
 import { errorMessage, formatDate, formatMoney } from '../../utils/format'
+import { useAuth } from '../../auth/AuthContext'
 
 export default function OrganizationDetail() {
+  const { admin } = useAuth()
   const { id } = useParams()
   const navigate = useNavigate()
   const [org, setOrg] = useState(null)
@@ -63,15 +65,15 @@ export default function OrganizationDetail() {
         subtitle={`${org.code} · ${org.status}`}
         actions={
           <>
-            <Link className="btn" to={`/loans/new?organization_id=${org.id}`}>
+            {!admin?.is_demo ? <Link className="btn" to={`/loans/new?organization_id=${org.id}`}>
               New loan
-            </Link>
+            </Link> : null}
             <Link className="btn btn-secondary" to={`/reports/organization/${org.id}`}>
               Statement
             </Link>
-            <button className="btn btn-ghost" type="button" disabled={busy} onClick={toggleStatus}>
+            {!admin?.is_demo ? <button className="btn btn-ghost" type="button" disabled={busy} onClick={toggleStatus}>
               {org.status === 'active' ? 'Deactivate' : 'Activate'}
-            </button>
+            </button> : null}
           </>
         }
       />

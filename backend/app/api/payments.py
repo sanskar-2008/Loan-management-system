@@ -5,7 +5,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session, joinedload
 
 from app.database import get_db
-from app.deps import get_current_admin
+from app.deps import get_current_admin, require_admin_write
 from app.models.admin import Admin
 from app.models.loan import Loan
 from app.models.payment import Payment
@@ -57,7 +57,7 @@ def list_payments(
 def create_payment(
     body: PaymentCreate,
     db: Session = Depends(get_db),
-    admin: Admin = Depends(get_current_admin),
+    admin: Admin = Depends(require_admin_write),
 ):
     payment = payment_service.record_payment(
         db,
@@ -95,7 +95,7 @@ def void_payment(
     payment_id: str,
     body: PaymentVoidRequest,
     db: Session = Depends(get_db),
-    admin: Admin = Depends(get_current_admin),
+    admin: Admin = Depends(require_admin_write),
 ):
     payment = payment_service.void_payment(db, payment_id, body.reason, admin.id)
     payment = db.scalar(

@@ -904,6 +904,34 @@ table.data tr.no-click:hover td { background: transparent; cursor: default; }
   margin-top: 8px;
   padding: 10px 14px;
 }
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0 14px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.auth-divider::before, .auth-divider::after { content: ''; height: 1px; flex: 1; background: var(--border); }
+.auth-demo {
+  width: 100%;
+  min-height: 46px;
+  justify-content: space-between;
+  border-color: #cbd5e1;
+  color: #173b68;
+  font-weight: 650;
+}
+.auth-demo:hover { background: #f1f6fc; border-color: #9ab1ce; color: #173b68; }
+.auth-demo-note { margin: 9px 0 0; color: var(--muted); text-align: center; font-size: 12px; }
+.demo-mode-badge {
+  padding: 8px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #f1f6fc;
+  color: #244c79;
+  font-size: 12px;
+  font-weight: 650;
+}
 .auth-back {
   margin: 18px 0 0;
   text-align: center;

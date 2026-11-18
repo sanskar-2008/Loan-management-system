@@ -13,6 +13,7 @@ from __future__ import annotations
 
 from datetime import date, timedelta
 from decimal import Decimal
+import secrets
 
 from sqlalchemy import func, select
 
@@ -24,8 +25,8 @@ from app.seeds.seed_admin import init_db
 from app.seeds.migrate_to_orgs import migrate_schema
 from app.services import loan_service, payment_service
 from app.utils.codes import next_organization_code
+from app.utils.security import hash_password
 
-DEMO_MARK = "DEMO_SEED_V2"
 
 
 def _months_ago(months: int, *, day: date | None = None) -> date:
@@ -44,25 +45,25 @@ def _months_ago(months: int, *, day: date | None = None) -> date:
 
 ORG_SPECS = [
     {
-        "name": "HDFC Bank",
+        "name": "Demo · HDFC Bank",
         "contact_phone": "1800100100",
         "default_flat_rate": Decimal("11.5000"),
         "default_compound_rate": Decimal("13.0000"),
     },
     {
-        "name": "SBI",
+        "name": "Demo · SBI",
         "contact_phone": "1800112211",
         "default_flat_rate": Decimal("10.0000"),
         "default_compound_rate": None,
     },
     {
-        "name": "Local Co-op",
+        "name": "Demo · Local Co-op",
         "contact_phone": "9876500001",
         "default_flat_rate": None,
         "default_compound_rate": Decimal("14.5000"),
     },
     {
-        "name": "Friend — Ramesh",
+        "name": "Demo · Friend — Ramesh",
         "contact_phone": "9876500099",
         "default_flat_rate": Decimal("8.0000"),
         "default_compound_rate": Decimal("8.0000"),
@@ -82,11 +83,12 @@ def _ensure_orgs(db) -> dict[str, Organization]:
                 default_flat_rate=spec["default_flat_rate"],
                 default_compound_rate=spec["default_compound_rate"],
                 status="active",
-                notes=DEMO_MARK,
+                notes="Sample organization for product tour.",
             )
             db.add(org)
             db.flush()
         else:
+            org.notes = "Sample organization for product tour."
             org.default_flat_rate = spec["default_flat_rate"]
             org.default_compound_rate = spec["default_compound_rate"]
             org.status = "active"
@@ -97,7 +99,7 @@ def _ensure_orgs(db) -> dict[str, Organization]:
 
 LOAN_SAMPLES = [
     {
-        "org": "HDFC Bank",
+        "org": "Demo · HDFC Bank",
         "loan_type": "flat",
         "principal_amount": Decimal("150000.00"),
         "annual_interest_rate": Decimal("11.5000"),
@@ -107,7 +109,7 @@ LOAN_SAMPLES = [
         "modes": ["upi", "cash", "bank_transfer", "upi", "cash", "upi"],
     },
     {
-        "org": "SBI",
+        "org": "Demo · SBI",
         "loan_type": "compound",
         "principal_amount": Decimal("250000.00"),
         "annual_interest_rate": Decimal("12.0000"),
@@ -117,7 +119,7 @@ LOAN_SAMPLES = [
         "modes": ["bank_transfer", "upi", "cheque"],
     },
     {
-        "org": "Local Co-op",
+        "org": "Demo · Local Co-op",
         "loan_type": "flat",
         "principal_amount": Decimal("80000.00"),
         "annual_interest_rate": Decimal("10.0000"),
@@ -127,7 +129,7 @@ LOAN_SAMPLES = [
         "modes": ["cash", "upi", "cash", "bank_transfer", "upi", "cash"],
     },
     {
-        "org": "Friend — Ramesh",
+        "org": "Demo · Friend — Ramesh",
         "loan_type": "flat",
         "principal_amount": Decimal("50000.00"),
         "annual_interest_rate": Decimal("8.0000"),
@@ -138,7 +140,7 @@ LOAN_SAMPLES = [
         "defaulted": True,
     },
     {
-        "org": "HDFC Bank",
+        "org": "Demo · HDFC Bank",
         "loan_type": "compound",
         "principal_amount": Decimal("120000.00"),
         "annual_interest_rate": Decimal("13.0000"),
@@ -148,7 +150,7 @@ LOAN_SAMPLES = [
         "modes": ["upi"],
     },
     {
-        "org": "SBI",
+        "org": "Demo · SBI",
         "loan_type": "flat",
         "principal_amount": Decimal("300000.00"),
         "annual_interest_rate": Decimal("10.0000"),
@@ -176,16 +178,25 @@ def seed_demo(*, force: bool = False) -> dict:
     init_db()
     migrate_schema()
     db = SessionLocal()
+    db.info["demo_mode"] = True
     try:
         existing = db.scalar(
-            select(func.count()).select_from(Loan).where(Loan.notes == DEMO_MARK)
+            select(func.count()).select_from(Loan).where(Loan.loan_number.like("DEMO-LN-%"))
         )
         if existing and not force:
             return {"skipped": True, "existing_demo_loans": int(existing)}
 
-        admin = db.scalar(select(Admin).limit(1))
+        admin = db.scalar(select(Admin).where(Admin.username == "demo-viewer"))
         if not admin:
-            raise RuntimeError("Admin not found — run seed_admin / start the app first")
+            admin = Admin(
+                username="demo-viewer",
+                email="demo-viewer@loan-manager.invalid",
+                password_hash=hash_password(secrets.token_urlsafe(48)),
+                full_name="Demo Account",
+                is_active=True,
+            )
+            db.add(admin)
+            db.flush()
 
         orgs = _ensure_orgs(db)
 
@@ -203,7 +214,7 @@ def seed_demo(*, force: bool = False) -> dict:
                 annual_interest_rate=raw["annual_interest_rate"],
                 tenure_months=raw["tenure_months"],
                 disbursement_date=raw["disbursement_date"],
-                notes=DEMO_MARK,
+                notes="Sample loan for product tour.",
             )
             created_loans += 1
 
@@ -231,7 +242,7 @@ def seed_demo(*, force: bool = False) -> dict:
                     payment_date=pay_date,
                     payment_mode=modes[i % len(modes)],
                     reference_no=f"DEMO-{loan.loan_number}-{i + 1}",
-                    notes=DEMO_MARK,
+                    notes="Sample repayment for product tour.",
                     emi_schedule_id=None,
                     admin_id=admin.id,
                 )

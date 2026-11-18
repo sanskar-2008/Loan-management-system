@@ -5,7 +5,7 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.deps import get_current_admin
+from app.deps import get_current_admin, require_admin_write
 from app.models.admin import Admin
 from app.models.loan import Loan
 from app.models.organization import Organization
@@ -59,7 +59,7 @@ def list_organizations(
 def create_organization(
     body: OrganizationCreate,
     db: Session = Depends(get_db),
-    admin: Admin = Depends(get_current_admin),
+    admin: Admin = Depends(require_admin_write),
 ):
     org = Organization(
         code=next_organization_code(db),
@@ -103,7 +103,7 @@ def update_organization(
     organization_id: str,
     body: OrganizationUpdate,
     db: Session = Depends(get_db),
-    admin: Admin = Depends(get_current_admin),
+    admin: Admin = Depends(require_admin_write),
 ):
     org = db.get(Organization, organization_id)
     if not org:
@@ -151,7 +151,7 @@ def update_organization_status(
     organization_id: str,
     body: StatusUpdate,
     db: Session = Depends(get_db),
-    admin: Admin = Depends(get_current_admin),
+    admin: Admin = Depends(require_admin_write),
 ):
     org = db.get(Organization, organization_id)
     if not org:

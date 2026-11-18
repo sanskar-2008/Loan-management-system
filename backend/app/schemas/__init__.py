@@ -27,6 +27,7 @@ class AdminOut(BaseModel):
     email: str
     full_name: str | None
     is_active: bool
+    is_demo: bool = False
 
     model_config = {"from_attributes": True}
 

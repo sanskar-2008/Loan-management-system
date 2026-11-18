@@ -5,7 +5,7 @@ from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.deps import get_current_admin
+from app.deps import get_current_admin, require_admin_write
 from app.models.admin import Admin
 from app.schemas import AdminOut, ChangePasswordRequest, LoginRequest, TokenResponse
 from app.services.activity_service import log_activity
@@ -32,6 +32,21 @@ def login(body: LoginRequest, db: Session = Depends(get_db)):
     return TokenResponse(access_token=token)
 
 
+@router.post("/demo", response_model=TokenResponse)
+def demo_login(db: Session = Depends(get_db)):
+    """Issue a short-lived, read-only identity for the seeded sample account."""
+    demo = db.scalar(
+        select(Admin).where(Admin.username == "demo-viewer", Admin.is_active.is_(True))
+    )
+    if not demo:
+        raise HTTPException(status_code=503, detail="Demo account is being prepared. Try again shortly.")
+    return TokenResponse(
+        access_token=create_access_token(
+            demo.id, {"username": demo.username, "role": "demo"}
+        )
+    )
+
+
 @router.get("/me", response_model=AdminOut)
 def me(admin: Admin = Depends(get_current_admin)):
     return admin
@@ -41,7 +56,7 @@ def me(admin: Admin = Depends(get_current_admin)):
 def change_password(
     body: ChangePasswordRequest,
     db: Session = Depends(get_db),
-    admin: Admin = Depends(get_current_admin),
+    admin: Admin = Depends(require_admin_write),
 ):
     if body.new_password != body.confirm_password:
         raise HTTPException(status_code=400, detail="New password and confirmation do not match")
